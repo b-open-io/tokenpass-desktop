@@ -1,14 +1,16 @@
 {
-  "name": "starfish-desktop",
+  "name": "tokenpass-desktop",
   "version": "0.1.0",
   "description": "Decentralized Identity System Powered by Bitcoin",
   "main": "index.js",
-  "homepage": "https://starfish.computer",
+  "type": "module",
+  "homepage": "https://tokenpass.app",
   "scripts": {
+    "start": "electron .",
     "build": "electron-builder -mwl"
   },
   "build": {
-    "appId": "computer.starfish",
+    "appId": "app.tokenpass",
     "extraResources": [
       {
         "from": "./extraResources/",
@@ -25,11 +27,10 @@
   "author": "sobachef@protonmail.com",
   "license": "MIT",
   "dependencies": {
-    "open": "^7.3.0",
-    "starfish-server": "0.1.0"
+    "open": "^11.0.0"
   },
   "devDependencies": {
-    "electron": "^10.1.3",
-    "electron-builder": "^22.9.1"
+    "electron": "^27.2.0",
+    "electron-builder": "^25.1.8"
   }
 }
