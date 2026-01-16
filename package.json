@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Decentralized Identity System Powered by Bitcoin",
   "main": "index.js",
-  "type": "module",
   "homepage": "https://tokenpass.app",
   "scripts": {
     "start": "electron .",
@@ -30,7 +29,7 @@
     "open": "^11.0.0"
   },
   "devDependencies": {
-    "electron": "^27.2.0",
-    "electron-builder": "^25.1.8"
+    "electron": "^40.0.0",
+    "electron-builder": "^26.4.0"
   }
 }
