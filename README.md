@@ -1,32 +1,42 @@
-# Starfish Desktop
+# TokenPass Desktop
 
-Starfish desktop is a cross platform (Mac, Windows, Linux) desktop app that wraps [starfish-server](https://github.com/sobachef/starfish-server), a web server that runs in the background and signs any incoming request to sign a message using its internal private keys.
+![TokenPass](https://tokenpass.app/banner.png)
 
-It is powered by [Electron](https://www.electronjs.org/), but does not use the browser UI at all. The Electron form factor is only used to package the [starfish-server](https://github.com/sobachef/starfish-server) so the local server can be installed and run with one click.
+TokenPass Desktop is your personal identity server. A cross-platform (macOS, Windows, Linux) desktop app that runs the Sigma Identity stack locally.
 
-Starfish Desktop is entirely a background application without a user interface, so it doesn't take up much resource (CPU or resource) as other Electron apps do.
+## What is TokenPass?
 
-Learn more about Starfish here: https://starfish.computer
+TokenPass lets you be your own OAuth provider with Bitcoin-backed authentication. No cloud accounts, no centralized dependencies.
 
-# Usage
+- **Type42 (BRC-42/BRC-43)** - Key derivation for per-app isolation
+- **BAP** - Bitcoin Attestation Protocol for identity
+- **BSM** - Bitcoin Signed Message for authentication
+- **ECIES** - End-to-end encryption using Bitcoin keys
 
-- Download the apps at https://starfish.computer/download.html
-- Learn how to use at https://starfish.computer
+## Download
 
-# Build
+Get the latest release: https://github.com/b-open-io/tokenpass-desktop/releases
 
-To build this repository, first install `electron-builder`.
+- **macOS**: `.dmg` (Apple Silicon)
+- **Windows**: `.exe` installer
+- **Linux**: `.AppImage`
 
+## How It Works
+
+TokenPass runs as a background application (system tray) and provides a local identity server on port 21000. Web applications can request signatures and authentication through the REST API.
+
+## Build from Source
+
+```bash
+bun install
+bun run build
 ```
-npm install -g electron-builder
-```
 
-Then run:
+## Links
 
-```
-npm run build
-```
+- Website: https://tokenpass.app
+- Server: https://github.com/b-open-io/tokenpass-server
 
-# Contribution
+## License
 
-is welcome.
+MIT
