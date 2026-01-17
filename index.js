@@ -1,4 +1,4 @@
-const { app, Menu, Tray, nativeImage } = require('electron')
+const { app, Menu, Tray, nativeImage, shell } = require('electron')
 const { join } = require('path')
 const { spawn } = require('child_process')
 
@@ -82,9 +82,8 @@ if (!gotTheLock) {
 
       const contextMenu = Menu.buildFromTemplate([{
         label: 'Dashboard',
-        click: async () => {
-          const open = (await import('open')).default
-          open('http://localhost:21000')
+        click: () => {
+          shell.openExternal('http://localhost:21000')
         }
       }, {
         type: 'separator'
@@ -147,14 +146,9 @@ if (!gotTheLock) {
     createTray()
 
     // Wait for server to start before opening browser
-    setTimeout(async () => {
-      try {
-        const open = (await import('open')).default
-        await open('http://localhost:21000')
-        console.log('Opened browser')
-      } catch (err) {
-        console.error('Error opening browser:', err)
-      }
+    setTimeout(() => {
+      shell.openExternal('http://localhost:21000')
+      console.log('Opened browser')
     }, 2000)
   }
 
