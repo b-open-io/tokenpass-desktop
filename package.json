@@ -17,6 +17,13 @@
         "filter": [
           "**/*"
         ]
+      },
+      {
+        "from": "./server/",
+        "to": "server",
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "dmg": {},

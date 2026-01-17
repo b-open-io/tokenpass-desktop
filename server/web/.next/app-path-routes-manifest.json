@@ -1,0 +1,21 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/auth/icon/route": "/api/auth/icon",
+  "/api/auth/route": "/api/auth",
+  "/api/decrypt/route": "/api/decrypt",
+  "/api/encrypt/route": "/api/encrypt",
+  "/api/export/route": "/api/export",
+  "/api/friend-pubkey/route": "/api/friend-pubkey",
+  "/api/login/route": "/api/login",
+  "/api/logout/route": "/api/logout",
+  "/api/migrate/route": "/api/migrate",
+  "/api/profile/route": "/api/profile",
+  "/api/register/route": "/api/register",
+  "/api/sign-aip/route": "/api/sign-aip",
+  "/api/sign/route": "/api/sign",
+  "/api/status/route": "/api/status",
+  "/auth/page": "/auth",
+  "/favicon.ico/route": "/favicon.ico",
+  "/page": "/"
+}

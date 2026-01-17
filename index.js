@@ -1,10 +1,12 @@
 const { app, Menu, Tray, nativeImage } = require('electron')
 const { join } = require('path')
+const { spawn } = require('child_process')
 
 // Disable sandbox for macOS development (required for Electron 40+)
 app.commandLine.appendSwitch('no-sandbox')
 
 let tray = null
+let serverProcess = null
 
 // SINGLETON LOCK - Ensure only one instance runs
 const gotTheLock = app.requestSingleInstanceLock()
@@ -107,16 +109,53 @@ if (!gotTheLock) {
     }
   }
 
+  const startServer = () => {
+    // Use bundled standalone server
+    const serverDir = app.isPackaged
+      ? join(process.resourcesPath, 'server', 'web')
+      : join(__dirname, 'server', 'web')
+
+    console.log('Starting server from:', serverDir)
+
+    serverProcess = spawn('node', ['server.js'], {
+      cwd: serverDir,
+      env: { ...process.env, PORT: '21000', HOSTNAME: '0.0.0.0' },
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
+
+    serverProcess.stdout.on('data', (data) => {
+      console.log(`[server] ${data.toString().trim()}`)
+    })
+
+    serverProcess.stderr.on('data', (data) => {
+      console.error(`[server] ${data.toString().trim()}`)
+    })
+
+    serverProcess.on('error', (err) => {
+      console.error('Failed to start server:', err)
+    })
+
+    serverProcess.on('close', (code) => {
+      console.log(`Server exited with code ${code}`)
+      serverProcess = null
+    })
+  }
+
   const init = async () => {
     console.log('Initializing TokenPass...')
+    startServer()
     createTray()
-    try {
-      const open = (await import('open')).default
-      await open('http://localhost:21000')
-      console.log('Opened browser')
-    } catch (err) {
-      console.error('Error opening browser:', err)
-    }
+
+    // Wait for server to start before opening browser
+    setTimeout(async () => {
+      try {
+        const open = (await import('open')).default
+        await open('http://localhost:21000')
+        console.log('Opened browser')
+      } catch (err) {
+        console.error('Error opening browser:', err)
+      }
+    }, 2000)
   }
 
   app.whenReady().then(() => {
@@ -127,6 +166,13 @@ if (!gotTheLock) {
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
       app.quit()
+    }
+  })
+
+  app.on('will-quit', () => {
+    if (serverProcess) {
+      console.log('Stopping server...')
+      serverProcess.kill()
     }
   })
 

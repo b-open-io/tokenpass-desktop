@@ -1,0 +1,21 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/icon/route": "app/api/auth/icon/route.js",
+  "/api/auth/route": "app/api/auth/route.js",
+  "/api/decrypt/route": "app/api/decrypt/route.js",
+  "/api/encrypt/route": "app/api/encrypt/route.js",
+  "/api/export/route": "app/api/export/route.js",
+  "/api/friend-pubkey/route": "app/api/friend-pubkey/route.js",
+  "/api/login/route": "app/api/login/route.js",
+  "/api/logout/route": "app/api/logout/route.js",
+  "/api/migrate/route": "app/api/migrate/route.js",
+  "/api/profile/route": "app/api/profile/route.js",
+  "/api/register/route": "app/api/register/route.js",
+  "/api/sign-aip/route": "app/api/sign-aip/route.js",
+  "/api/sign/route": "app/api/sign/route.js",
+  "/api/status/route": "app/api/status/route.js",
+  "/auth/page": "app/auth/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/page": "app/page.js"
+}
