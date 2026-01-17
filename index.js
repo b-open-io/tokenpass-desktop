@@ -1,6 +1,6 @@
 const { app, Menu, Tray, nativeImage, shell } = require('electron')
 const { join } = require('path')
-const { spawn } = require('child_process')
+const { spawn, exec } = require('child_process')
 
 // Disable sandbox for macOS development (required for Electron 40+)
 app.commandLine.appendSwitch('no-sandbox')
@@ -64,6 +64,55 @@ if (!gotTheLock) {
     handleDeepLink(url)
   })
 
+  const DASHBOARD_URL = 'http://localhost:21000'
+
+  // Open dashboard, reusing existing Chrome tab if possible (macOS only)
+  function openDashboard() {
+    if (process.platform !== 'darwin') {
+      shell.openExternal(DASHBOARD_URL)
+      return
+    }
+
+    // AppleScript to find and focus existing Chrome tab, or open new one
+    const script = `
+      tell application "System Events"
+        set chromeRunning to (name of processes) contains "Google Chrome"
+      end tell
+      if chromeRunning then
+        tell application "Google Chrome"
+          set found to false
+          repeat with w in windows
+            set tabIndex to 0
+            repeat with t in tabs of w
+              set tabIndex to tabIndex + 1
+              if URL of t starts with "${DASHBOARD_URL}" then
+                set active tab index of w to tabIndex
+                set index of w to 1
+                activate
+                set found to true
+                exit repeat
+              end if
+            end repeat
+            if found then exit repeat
+          end repeat
+          if not found then
+            open location "${DASHBOARD_URL}"
+            activate
+          end if
+        end tell
+      else
+        open location "${DASHBOARD_URL}"
+      end if
+    `
+
+    exec(`osascript -e '${script.replace(/'/g, "'\"'\"'")}'`, (err) => {
+      if (err) {
+        console.log('AppleScript failed, using fallback:', err.message)
+        shell.openExternal(DASHBOARD_URL)
+      }
+    })
+  }
+
   const createTray = () => {
     try {
       const iconPath = join(__dirname, 'extraResources', 'icon.png')
@@ -83,7 +132,19 @@ if (!gotTheLock) {
       const contextMenu = Menu.buildFromTemplate([{
         label: 'Dashboard',
         click: () => {
-          shell.openExternal('http://localhost:21000')
+          openDashboard()
+        }
+      }, {
+        label: 'Launch at Login',
+        type: 'checkbox',
+        checked: app.getLoginItemSettings().openAtLogin,
+        click: (menuItem) => {
+          const settings = { openAtLogin: menuItem.checked }
+          // macOS-only: start hidden (tray only, no dock icon)
+          if (process.platform === 'darwin') {
+            settings.openAsHidden = true
+          }
+          app.setLoginItemSettings(settings)
         }
       }, {
         type: 'separator'
@@ -147,7 +208,7 @@ if (!gotTheLock) {
 
     // Wait for server to start before opening browser
     setTimeout(() => {
-      shell.openExternal('http://localhost:21000')
+      openDashboard()
       console.log('Opened browser')
     }, 2000)
   }
