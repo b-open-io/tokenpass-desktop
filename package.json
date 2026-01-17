@@ -1,6 +1,6 @@
 {
   "name": "tokenpass-desktop",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Decentralized Identity System Powered by Bitcoin",
   "main": "index.js",
   "homepage": "https://tokenpass.app",
