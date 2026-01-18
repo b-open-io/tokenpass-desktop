@@ -85,7 +85,7 @@
       "icon": "icon.png"
     }
   },
-  "author": "sobachef@protonmail.com",
+  "author": "B-Open-IO",
   "license": "MIT",
   "dependencies": {
     "electron-store": "8",
