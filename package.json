@@ -69,7 +69,7 @@
       "allowToChangeInstallationDirectory": true
     },
     "linux": {
-      "target": ["AppImage", "snap"],
+      "target": ["AppImage"],
       "category": "Utility",
       "icon": "icon.png"
     }
