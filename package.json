@@ -2,25 +2,33 @@
   "name": "tokenpass-desktop",
   "version": "0.0.3",
   "description": "Decentralized Identity System Powered by Bitcoin",
-  "main": "index.js",
+  "main": "out/index.js",
   "homepage": "https://tokenpass.app",
   "repository": {
     "type": "git",
     "url": "https://github.com/b-open-io/tokenpass-desktop"
   },
   "scripts": {
-    "start": "electron .",
+    "compile": "tsc",
+    "start": "tsc && electron .",
+    "dev": "tsc --watch & electron .",
+    "prebuild": "tsc",
     "build": "electron-builder -mwl",
-    "build:mac": "electron-builder --mac --arm64 --x64",
-    "build:mac:arm64": "electron-builder --mac --arm64",
-    "build:mac:x64": "electron-builder --mac --x64",
-    "build:win": "electron-builder --win --x64",
-    "build:linux": "electron-builder --linux --x64"
+    "build:mac": "tsc && electron-builder --mac --arm64 --x64",
+    "build:mac:arm64": "tsc && electron-builder --mac --arm64",
+    "build:mac:x64": "tsc && electron-builder --mac --x64",
+    "build:win": "tsc && electron-builder --win --x64",
+    "build:linux": "tsc && electron-builder --linux --x64"
   },
   "build": {
     "appId": "app.tokenpass",
     "productName": "TokenPass",
     "generateUpdatesFilesForAllChannels": true,
+    "files": [
+      "out/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
     "publish": {
       "provider": "github",
       "owner": "b-open-io",
@@ -78,12 +86,14 @@
   "author": "sobachef@protonmail.com",
   "license": "MIT",
   "dependencies": {
-    "electron-store": "^11.0.2",
+    "electron-store": "8",
     "electron-updater": "^6.7.3"
   },
   "devDependencies": {
     "@electron/notarize": "^3.1.1",
+    "@types/node": "^25.0.9",
     "electron": "^40.0.0",
-    "electron-builder": "^26.4.0"
+    "electron-builder": "^26.4.0",
+    "typescript": "^5.9.3"
   }
 }

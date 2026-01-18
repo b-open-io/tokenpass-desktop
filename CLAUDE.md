@@ -10,7 +10,8 @@ TokenPass Desktop is an Electron-based system tray application that bundles and 
 
 ```bash
 bun install              # Install dependencies
-bun start                # Run the app in dev mode
+bun run compile          # Compile TypeScript to out/
+bun start                # Compile and run in dev mode
 bun run build            # Build all platforms (macOS, Windows, Linux)
 bun run build:mac        # macOS universal (arm64 + x64)
 bun run build:mac:arm64  # macOS Apple Silicon only
@@ -19,9 +20,20 @@ bun run build:win        # Windows x64
 bun run build:linux      # Linux x64
 ```
 
+## Project Structure
+
+```
+src/index.ts       # Main process (TypeScript source)
+out/index.js       # Compiled output (gitignored)
+server/            # Bundled Next.js standalone server
+extraResources/    # Tray icon and other resources
+build/             # Build configs (entitlements, notarize script)
+scripts/           # Build scripts (notarize.js)
+```
+
 ## Architecture
 
-- **index.js** - Main Electron process:
+- **src/index.ts** - Main Electron process:
   - Spawns the bundled Next.js standalone server (`node server.js`)
   - Creates system tray with Dashboard/Exit menu
   - Handles deep links (`sigmaauth://`, `tokenpass://`) for OAuth callbacks

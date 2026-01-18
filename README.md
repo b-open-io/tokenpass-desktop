@@ -54,11 +54,17 @@ TokenPass runs as a background application (system tray) and provides a local id
 
 ```bash
 bun install
+bun run compile        # Compile TypeScript
+bun start              # Run in dev mode
 bun run build          # All platforms
 bun run build:mac      # macOS universal (arm64 + x64)
 bun run build:win      # Windows
 bun run build:linux    # Linux
 ```
+
+## Development
+
+The app is written in TypeScript. Source is in `src/`, compiled output goes to `out/`.
 
 ## Code Signing
 
