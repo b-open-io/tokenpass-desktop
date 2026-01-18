@@ -52,6 +52,19 @@ Key behaviors:
 - Server runs on port 21000
 - Auto-updates: checks on launch, prompts user to download/install
 
+## Tray Menu
+
+- **Dashboard** - Opens http://localhost:21000 in browser
+  - macOS: Reuses existing Chrome tab if open (requires one-time permission for System Events and Chrome)
+  - Other platforms: Opens new tab via shell.openExternal
+- **Launch at Login** - Toggle auto-start on system boot (cross-platform)
+  - macOS: Uses Login Items with `openAsHidden: true`
+  - Windows: Uses Registry
+  - Linux: Uses `~/.config/autostart/`
+- **Beta Updates** - Toggle to receive pre-release versions
+- **Check for Updates** - Manual update check
+- **Exit** - Quit the app
+
 ## Code Signing & Notarization
 
 macOS builds require these environment variables:
