@@ -17,9 +17,16 @@ TokenPass lets you be your own OAuth provider with Bitcoin-backed authentication
 
 Get the latest release: https://github.com/b-open-io/tokenpass-desktop/releases
 
-- **macOS**: `.dmg` (Apple Silicon)
-- **Windows**: `.exe` installer
-- **Linux**: `.AppImage`
+| Platform | Download |
+|----------|----------|
+| macOS (Apple Silicon) | `.dmg` / `.zip` |
+| macOS (Intel) | `.dmg` / `.zip` |
+| Windows | `.exe` installer |
+| Linux | `.AppImage` / `.snap` |
+
+## Auto-Updates
+
+TokenPass automatically checks for updates on launch. When a new version is available, you'll be prompted to download and install it.
 
 ## How It Works
 
@@ -29,8 +36,15 @@ TokenPass runs as a background application (system tray) and provides a local id
 
 ```bash
 bun install
-bun run build
+bun run build          # All platforms
+bun run build:mac      # macOS universal (arm64 + x64)
+bun run build:win      # Windows
+bun run build:linux    # Linux
 ```
+
+## Code Signing
+
+Builds are signed and notarized for macOS. Windows builds are signed with Authenticode.
 
 ## Links
 

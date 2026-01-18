@@ -1,39 +1,86 @@
 {
   "name": "tokenpass-desktop",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Decentralized Identity System Powered by Bitcoin",
   "main": "index.js",
   "homepage": "https://tokenpass.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/b-open-io/tokenpass-desktop"
+  },
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder -mwl"
+    "build": "electron-builder -mwl",
+    "build:mac": "electron-builder --mac --arm64 --x64",
+    "build:mac:arm64": "electron-builder --mac --arm64",
+    "build:mac:x64": "electron-builder --mac --x64",
+    "build:win": "electron-builder --win --x64",
+    "build:linux": "electron-builder --linux --x64"
   },
   "build": {
     "appId": "app.tokenpass",
+    "productName": "TokenPass",
+    "publish": {
+      "provider": "github",
+      "owner": "b-open-io",
+      "repo": "tokenpass-desktop"
+    },
     "extraResources": [
       {
         "from": "./extraResources/",
         "to": "extraResources",
-        "filter": [
-          "**/*"
-        ]
+        "filter": ["**/*"]
       },
       {
         "from": "./server/",
         "to": "server",
-        "filter": [
-          "**/*"
-        ]
+        "filter": ["**/*"]
       }
     ],
-    "dmg": {},
-    "linux": {},
-    "win": {}
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64", "x64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["arm64", "x64"]
+        }
+      ],
+      "category": "public.app-category.utilities",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": false
+    },
+    "afterSign": "scripts/notarize.js",
+    "dmg": {
+      "sign": false
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "target": ["AppImage", "snap"],
+      "category": "Utility",
+      "icon": "icon.png"
+    }
   },
   "author": "sobachef@protonmail.com",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "electron-updater": "^6.7.3"
+  },
   "devDependencies": {
+    "@electron/notarize": "^3.1.1",
     "electron": "^40.0.0",
     "electron-builder": "^26.4.0"
   }

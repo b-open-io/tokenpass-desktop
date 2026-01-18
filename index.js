@@ -1,6 +1,7 @@
-const { app, Menu, Tray, nativeImage, shell } = require('electron')
+const { app, Menu, Tray, nativeImage, shell, dialog, Notification } = require('electron')
 const { join } = require('path')
 const { spawn, exec } = require('child_process')
+const { autoUpdater } = require('electron-updater')
 
 // Disable sandbox for macOS development (required for Electron 40+)
 app.commandLine.appendSwitch('no-sandbox')
@@ -213,9 +214,88 @@ if (!gotTheLock) {
     }, 2000)
   }
 
+  // Auto-updater configuration
+  autoUpdater.autoDownload = false  // Don't auto-download, prompt user first
+  autoUpdater.autoInstallOnAppQuit = true
+
+  autoUpdater.on('checking-for-update', () => {
+    console.log('Checking for updates...')
+  })
+
+  autoUpdater.on('update-available', (info) => {
+    console.log('Update available:', info.version)
+
+    // Show notification
+    if (Notification.isSupported()) {
+      const notification = new Notification({
+        title: 'Update Available',
+        body: `TokenPass ${info.version} is available. Click to download.`,
+        silent: false
+      })
+
+      notification.on('click', () => {
+        autoUpdater.downloadUpdate()
+      })
+
+      notification.show()
+    }
+
+    // Also show dialog
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'Update Available',
+      message: `TokenPass ${info.version} is available.`,
+      detail: 'Would you like to download and install it now?',
+      buttons: ['Download', 'Later'],
+      defaultId: 0,
+      cancelId: 1
+    }).then(({ response }) => {
+      if (response === 0) {
+        autoUpdater.downloadUpdate()
+      }
+    })
+  })
+
+  autoUpdater.on('update-not-available', () => {
+    console.log('No updates available')
+  })
+
+  autoUpdater.on('download-progress', (progress) => {
+    console.log(`Download progress: ${Math.round(progress.percent)}%`)
+  })
+
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('Update downloaded:', info.version)
+
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'Update Ready',
+      message: `TokenPass ${info.version} has been downloaded.`,
+      detail: 'Restart now to install the update?',
+      buttons: ['Restart', 'Later'],
+      defaultId: 0,
+      cancelId: 1
+    }).then(({ response }) => {
+      if (response === 0) {
+        autoUpdater.quitAndInstall()
+      }
+    })
+  })
+
+  autoUpdater.on('error', (err) => {
+    console.error('Auto-updater error:', err.message)
+  })
+
   app.whenReady().then(() => {
     console.log('App ready')
     init()
+
+    // Check for updates after a short delay (let the app initialize first)
+    setTimeout(() => {
+      autoUpdater.checkForUpdates().catch(err => {
+        console.log('Update check failed:', err.message)
+      })
+    }, 5000)
   })
 
   app.on('window-all-closed', () => {
