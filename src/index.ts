@@ -145,7 +145,9 @@ if (!gotTheLock) {
 
   function createTray(): void {
     try {
-      const iconPath = join(__dirname, "..", "extraResources", "icon.png");
+      const iconPath = app.isPackaged
+        ? join(process.resourcesPath, "extraResources", "icon.png")
+        : join(__dirname, "..", "extraResources", "icon.png");
       console.log("Icon path:", iconPath);
 
       const icon = nativeImage.createFromPath(iconPath);
