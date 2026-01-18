@@ -1,6 +1,6 @@
 # TokenPass Desktop
 
-![TokenPass](https://tokenpass.app/banner.png)
+![TokenPass](assets/banner.png)
 
 TokenPass Desktop is your personal identity server. A cross-platform (macOS, Windows, Linux) desktop app that runs the Sigma Identity stack locally.
 
