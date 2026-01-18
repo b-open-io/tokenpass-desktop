@@ -18,7 +18,9 @@
     "build:mac:arm64": "tsc && electron-builder --mac --arm64",
     "build:mac:x64": "tsc && electron-builder --mac --x64",
     "build:win": "tsc && electron-builder --win --x64",
-    "build:linux": "tsc && electron-builder --linux --x64"
+    "build:linux": "tsc && electron-builder --linux --x64",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --write src/"
   },
   "build": {
     "appId": "app.tokenpass",
@@ -90,6 +92,7 @@
     "electron-updater": "^6.7.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.11",
     "@electron/notarize": "^3.1.1",
     "@types/node": "^25.0.9",
     "electron": "^40.0.0",

@@ -1,17 +1,17 @@
+import { type ChildProcess, exec, spawn } from "node:child_process";
+import { join } from "node:path";
 import {
   app,
+  dialog,
   Menu,
-  Tray,
+  type MenuItem,
+  Notification,
   nativeImage,
   shell,
-  dialog,
-  Notification,
-  type MenuItem,
+  Tray,
 } from "electron";
-import { join } from "path";
-import { spawn, exec, type ChildProcess } from "child_process";
-import { autoUpdater } from "electron-updater";
 import Store from "electron-store";
+import { autoUpdater } from "electron-updater";
 
 // Store schema for type safety
 interface StoreSchema {
@@ -63,7 +63,7 @@ if (!gotTheLock) {
   app.on("second-instance", (_event, argv) => {
     // Check for deep link URL in command line args
     const url = argv.find(
-      (arg) => arg.startsWith("sigmaauth://") || arg.startsWith("tokenpass://")
+      (arg) => arg.startsWith("sigmaauth://") || arg.startsWith("tokenpass://"),
     );
     if (url) {
       handleDeepLink(url);
@@ -190,7 +190,7 @@ if (!gotTheLock) {
             autoUpdater.allowPrerelease = menuItem.checked;
             console.log(
               "Update channel changed to:",
-              menuItem.checked ? "beta" : "stable"
+              menuItem.checked ? "beta" : "stable",
             );
             // Check for updates with new channel setting
             autoUpdater.checkForUpdates().catch((err: Error) => {
