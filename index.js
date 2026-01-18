@@ -17,6 +17,10 @@ if (!gotTheLock) {
   console.log('Another instance is already running. Quitting...')
   app.quit()
 } else {
+  // Initialize settings store for preferences
+  const Store = require('electron-store')
+  const store = new Store()
+
   // Handle second instance attempt
   app.on('second-instance', (event, argv) => {
     // Check for deep link URL in command line args
@@ -148,6 +152,30 @@ if (!gotTheLock) {
           app.setLoginItemSettings(settings)
         }
       }, {
+        label: 'Beta Updates',
+        type: 'checkbox',
+        checked: store.get('useBetaChannel', false),
+        click: (menuItem) => {
+          store.set('useBetaChannel', menuItem.checked)
+          autoUpdater.allowPrerelease = menuItem.checked
+          console.log('Update channel changed to:', menuItem.checked ? 'beta' : 'stable')
+          // Check for updates with new channel setting
+          autoUpdater.checkForUpdates().catch(err => {
+            console.log('Update check failed:', err.message)
+          })
+        }
+      }, {
+        label: 'Check for Updates',
+        click: () => {
+          autoUpdater.checkForUpdates().catch(err => {
+            dialog.showMessageBox({
+              type: 'info',
+              title: 'Update Check',
+              message: 'You are running the latest version.'
+            })
+          })
+        }
+      }, {
         type: 'separator'
       }, {
         label: 'Exit',
@@ -217,6 +245,11 @@ if (!gotTheLock) {
   // Auto-updater configuration
   autoUpdater.autoDownload = false  // Don't auto-download, prompt user first
   autoUpdater.autoInstallOnAppQuit = true
+
+  // Beta channel support - users can opt-in to prereleases
+  const useBetaChannel = store.get('useBetaChannel', false)
+  autoUpdater.allowPrerelease = useBetaChannel
+  console.log('Update channel:', useBetaChannel ? 'beta' : 'stable')
 
   autoUpdater.on('checking-for-update', () => {
     console.log('Checking for updates...')

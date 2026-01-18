@@ -152,9 +152,32 @@ Use this template:
 
 ### Release Naming Convention
 
-- Tag format: `vX.X.X` (e.g., `v0.0.3`)
-- Release title: `TokenPass Desktop vX.X.X`
-- Always include platform-specific download instructions
+- **Stable**: `vX.X.X` (e.g., `v0.0.3`)
+- **Beta**: `vX.X.X-beta.N` (e.g., `v0.1.0-beta.1`)
+- **Alpha**: `vX.X.X-alpha.N` (e.g., `v0.1.0-alpha.1`)
+- **Release Candidate**: `vX.X.X-rc.N` (e.g., `v1.0.0-rc.1`)
+
+### Beta Releases
+
+To create a beta release:
+
+1. Update version in package.json with beta suffix:
+   ```json
+   "version": "0.1.0-beta.1"
+   ```
+
+2. Commit, tag, and push:
+   ```bash
+   git add -A
+   git commit -m "Release v0.1.0-beta.1"
+   git push origin main
+   git tag v0.1.0-beta.1
+   git push origin v0.1.0-beta.1
+   ```
+
+3. GitHub will mark it as a prerelease automatically
+
+Users opt-in to beta channel via tray menu → "Beta Updates". The `generateUpdatesFilesForAllChannels` config ensures update manifests are generated for all channels.
 
 ## BSV Protocols
 

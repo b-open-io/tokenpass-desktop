@@ -22,11 +22,29 @@ Get the latest release: https://github.com/b-open-io/tokenpass-desktop/releases
 | macOS (Apple Silicon) | `.dmg` / `.zip` |
 | macOS (Intel) | `.dmg` / `.zip` |
 | Windows | `.exe` installer |
-| Linux | `.AppImage` / `.snap` |
+| Linux | `.AppImage` |
 
 ## Auto-Updates
 
 TokenPass automatically checks for updates on launch. When a new version is available, you'll be prompted to download and install it.
+
+### Beta Channel
+
+Want early access to new features? Enable beta updates from the system tray menu:
+
+1. Click the TokenPass icon in your system tray
+2. Check **Beta Updates**
+3. The app will check for beta releases (e.g., `v0.1.0-beta.1`)
+
+Beta releases are tagged with `-beta`, `-alpha`, or `-rc` suffixes. Stable releases have no suffix.
+
+To create a beta release:
+```bash
+# Update version in package.json to include beta suffix
+# e.g., "version": "0.1.0-beta.1"
+git tag v0.1.0-beta.1
+git push origin v0.1.0-beta.1
+```
 
 ## How It Works
 

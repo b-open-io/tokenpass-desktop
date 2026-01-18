@@ -20,6 +20,7 @@
   "build": {
     "appId": "app.tokenpass",
     "productName": "TokenPass",
+    "generateUpdatesFilesForAllChannels": true,
     "publish": {
       "provider": "github",
       "owner": "b-open-io",
@@ -77,6 +78,7 @@
   "author": "sobachef@protonmail.com",
   "license": "MIT",
   "dependencies": {
+    "electron-store": "^11.0.2",
     "electron-updater": "^6.7.3"
   },
   "devDependencies": {
