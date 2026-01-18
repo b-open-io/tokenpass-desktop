@@ -21,16 +21,10 @@ jobs:
         include:
           - os: macos-latest
             platform: mac
-            arch: arm64
-          - os: macos-15-large
-            platform: mac
-            arch: x64
           - os: windows-latest
             platform: win
-            arch: x64
           - os: ubuntu-latest
             platform: linux
-            arch: x64
 
     runs-on: ${{ matrix.os }}
 
@@ -59,9 +53,9 @@ jobs:
             echo "No certificate - builds will be unsigned"
           fi
 
-      # Build for specific platform/arch
-      - name: Build (macOS arm64)
-        if: matrix.platform == 'mac' && matrix.arch == 'arm64'
+      # Build for specific platform
+      - name: Build (macOS universal)
+        if: matrix.platform == 'mac'
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
@@ -69,18 +63,7 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bun run build:mac:arm64
-
-      - name: Build (macOS x64)
-        if: matrix.platform == 'mac' && matrix.arch == 'x64'
-        env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bun run build:mac:x64
+        run: bun run build:mac
 
       - name: Build (Windows)
         if: matrix.platform == 'win'
@@ -100,7 +83,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.platform }}-${{ matrix.arch }}
+          name: build-${{ matrix.platform }}
           path: |
             dist/*.dmg
             dist/*.zip
