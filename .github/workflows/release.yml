@@ -99,6 +99,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -108,11 +113,48 @@ jobs:
       - name: List artifacts
         run: ls -la artifacts/ || echo "No artifacts directory"
 
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+
+          # Get commits since last tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s" $PREV_TAG..HEAD --no-merges | head -10)
+          else
+            COMMITS=$(git log --pretty=format:"- %s" -10 --no-merges)
+          fi
+
+          # Create release notes
+          cat > release_notes.md << EOF
+          ## What's New
+
+          $COMMITS
+
+          ## Installation
+
+          ### macOS
+          - **Apple Silicon (M1/M2/M3)**: Download \`TokenPass-${VERSION}-arm64.dmg\`
+          - **Intel**: Download \`TokenPass-${VERSION}.dmg\`
+
+          ### Windows
+          - Download \`TokenPass Setup ${VERSION}.exe\`
+
+          ### Linux
+          - Download \`TokenPass-${VERSION}.AppImage\`
+          EOF
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: Release v${{ steps.version.outputs.VERSION }}
+          body_path: release_notes.md
           files: artifacts/*
-          generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
         env:
