@@ -1,4 +1,5 @@
 import { type ChildProcess, exec, spawn } from "node:child_process";
+import { appendFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   app,
@@ -12,6 +13,23 @@ import {
 } from "electron";
 import Store from "electron-store";
 import { autoUpdater } from "electron-updater";
+
+// Debug logging to file
+const logFile = join(process.env.HOME || "/tmp", "tokenpass-debug.log");
+function log(msg: string): void {
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  console.log(msg);
+  try {
+    appendFileSync(logFile, line);
+  } catch (e) {
+    console.error("Log write failed:", e);
+  }
+}
+
+// Log immediately on startup
+log("=== TokenPass starting ===");
+log(`HOME: ${process.env.HOME}`);
+log(`Log file: ${logFile}`);
 
 // Store schema for type safety
 interface StoreSchema {
@@ -27,8 +45,19 @@ const store = new Store<StoreSchema>({
 // Disable sandbox for macOS development (required for Electron 40+)
 app.commandLine.appendSwitch("no-sandbox");
 
+// Set app name explicitly for notifications and system dialogs
+if (process.platform === "darwin") {
+  app.setName("TokenPass");
+}
+
 let tray: Tray | null = null;
 let serverProcess: ChildProcess | null = null;
+let serverStatus: "starting" | "running" | "error" = "starting";
+let healthCheckInterval: ReturnType<typeof setInterval> | null = null;
+const SERVER_PORT = 21000;
+const HEALTH_CHECK_INTERVAL = 5000; // 5 seconds
+const MAX_START_RETRIES = 3;
+let startRetries = 0;
 
 // SINGLETON LOCK - Ensure only one instance runs
 const gotTheLock = app.requestSingleInstanceLock();
@@ -94,7 +123,66 @@ if (!gotTheLock) {
     handleDeepLink(url);
   });
 
-  const DASHBOARD_URL = "http://localhost:21000";
+  const DASHBOARD_URL = `http://localhost:${SERVER_PORT}`;
+
+  // Update tray tooltip to show server status
+  function updateTrayStatus(): void {
+    if (!tray) return;
+
+    const statusText: Record<typeof serverStatus, string> = {
+      starting: "TokenPass - Starting server...",
+      running: "TokenPass - Server running",
+      error: "TokenPass - Server error (click to retry)",
+    };
+
+    tray.setToolTip(statusText[serverStatus]);
+    log(`Server status: ${serverStatus}`);
+  }
+
+  // Check if server is healthy by making an HTTP request
+  async function checkServerHealth(): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      const response = await fetch(`http://localhost:${SERVER_PORT}`, {
+        method: "HEAD",
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      return response.ok || response.status === 304;
+    } catch {
+      return false;
+    }
+  }
+
+  // Start health check polling
+  function startHealthCheck(): void {
+    if (healthCheckInterval) {
+      clearInterval(healthCheckInterval);
+    }
+
+    healthCheckInterval = setInterval(async () => {
+      const isHealthy = await checkServerHealth();
+
+      if (isHealthy && serverStatus !== "running") {
+        serverStatus = "running";
+        updateTrayStatus();
+        log("Server is now running");
+      } else if (!isHealthy && serverStatus === "running") {
+        serverStatus = "error";
+        updateTrayStatus();
+        log("Server stopped responding");
+
+        // Try to restart the server
+        if (startRetries < MAX_START_RETRIES) {
+          log(`Attempting to restart server (retry ${startRetries + 1}/${MAX_START_RETRIES})`);
+          startServer();
+        }
+      }
+    }, HEALTH_CHECK_INTERVAL);
+  }
 
   // Open dashboard, reusing existing Chrome tab if possible (macOS only)
   function openDashboard(): void {
@@ -148,18 +236,18 @@ if (!gotTheLock) {
       const iconPath = app.isPackaged
         ? join(process.resourcesPath, "extraResources", "icon.png")
         : join(__dirname, "..", "extraResources", "icon.png");
-      console.log("Icon path:", iconPath);
+      log(`Icon path: ${iconPath}`);
 
       const icon = nativeImage.createFromPath(iconPath);
       if (icon.isEmpty()) {
-        console.error("Icon is empty! Check path:", iconPath);
+        log(`ERROR: Icon is empty! Check path: ${iconPath}`);
         return;
       }
 
       // Resize for macOS menu bar (16x16 or 18x18)
       const resizedIcon = icon.resize({ width: 18, height: 18 });
       tray = new Tray(resizedIcon);
-      console.log("Tray created successfully");
+      log("Tray created successfully");
 
       const contextMenu = Menu.buildFromTemplate([
         {
@@ -168,6 +256,15 @@ if (!gotTheLock) {
             openDashboard();
           },
         },
+        {
+          label: "Restart Server",
+          click: () => {
+            log("Manual server restart requested");
+            startRetries = 0; // Reset retry count for manual restart
+            startServer();
+          },
+        },
+        { type: "separator" },
         {
           label: "Launch at Login",
           type: "checkbox",
@@ -238,47 +335,114 @@ if (!gotTheLock) {
   }
 
   function startServer(): void {
+    // Kill existing server process if any
+    if (serverProcess) {
+      log("Killing existing server process");
+      serverProcess.kill();
+      serverProcess = null;
+    }
+
+    serverStatus = "starting";
+    updateTrayStatus();
+    startRetries++;
+
     // Use bundled standalone server
     const serverDir = app.isPackaged
       ? join(process.resourcesPath, "server", "web")
       : join(__dirname, "..", "server", "web");
 
-    console.log("Starting server from:", serverDir);
+    log(`Starting server from: ${serverDir}`);
 
     serverProcess = spawn("node", ["server.js"], {
       cwd: serverDir,
-      env: { ...process.env, PORT: "21000", HOSTNAME: "0.0.0.0" },
+      env: { ...process.env, PORT: String(SERVER_PORT), HOSTNAME: "0.0.0.0" },
       stdio: ["ignore", "pipe", "pipe"],
     });
 
     serverProcess.stdout?.on("data", (data: Buffer) => {
-      console.log(`[server] ${data.toString().trim()}`);
+      const output = data.toString().trim();
+      log(`[server] ${output}`);
+
+      // Detect when Next.js reports it's ready
+      if (output.includes("Ready") || output.includes("started")) {
+        serverStatus = "running";
+        updateTrayStatus();
+        startRetries = 0; // Reset retries on successful start
+      }
     });
 
     serverProcess.stderr?.on("data", (data: Buffer) => {
-      console.error(`[server] ${data.toString().trim()}`);
+      log(`[server:err] ${data.toString().trim()}`);
     });
 
     serverProcess.on("error", (err: Error) => {
-      console.error("Failed to start server:", err);
+      log(`Failed to start server: ${err.message}`);
+      serverStatus = "error";
+      updateTrayStatus();
+
+      // Show notification about server error
+      if (Notification.isSupported()) {
+        new Notification({
+          title: "TokenPass Server Error",
+          body: `Failed to start server: ${err.message}`,
+        }).show();
+      }
     });
 
     serverProcess.on("close", (code: number | null) => {
-      console.log(`Server exited with code ${code}`);
+      log(`Server exited with code ${code}`);
       serverProcess = null;
+
+      if (code !== 0 && code !== null) {
+        serverStatus = "error";
+        updateTrayStatus();
+
+        // Auto-retry if we haven't exceeded max retries
+        if (startRetries < MAX_START_RETRIES) {
+          log(`Server crashed, retrying in 2 seconds (${startRetries}/${MAX_START_RETRIES})`);
+          setTimeout(() => startServer(), 2000);
+        } else {
+          log("Max retries exceeded, server will not restart automatically");
+          if (Notification.isSupported()) {
+            new Notification({
+              title: "TokenPass Server Failed",
+              body: "Server failed to start after multiple attempts. Right-click tray icon to retry.",
+            }).show();
+          }
+        }
+      }
     });
   }
 
   async function init(): Promise<void> {
-    console.log("Initializing TokenPass...");
-    startServer();
+    log("Initializing TokenPass...");
     createTray();
+    startServer();
+    startHealthCheck();
 
-    // Wait for server to start before opening browser
-    setTimeout(() => {
-      openDashboard();
-      console.log("Opened browser");
-    }, 2000);
+    // Wait for server to be ready before opening browser
+    const maxWaitTime = 15000; // 15 seconds max
+    const checkInterval = 500;
+    let waited = 0;
+
+    const waitForServer = setInterval(async () => {
+      waited += checkInterval;
+
+      if (serverStatus === "running" || (await checkServerHealth())) {
+        clearInterval(waitForServer);
+        serverStatus = "running";
+        updateTrayStatus();
+        openDashboard();
+        log("Opened browser after server ready");
+        return;
+      }
+
+      if (waited >= maxWaitTime) {
+        clearInterval(waitForServer);
+        log("Server did not become ready in time, opening dashboard anyway");
+        openDashboard();
+      }
+    }, checkInterval);
   }
 
   // Auto-updater configuration
@@ -363,7 +527,7 @@ if (!gotTheLock) {
   });
 
   app.whenReady().then(() => {
-    console.log("App ready");
+    log("App ready");
     init();
 
     // Check for updates after a short delay (let the app initialize first)
@@ -381,8 +545,11 @@ if (!gotTheLock) {
   });
 
   app.on("will-quit", () => {
+    if (healthCheckInterval) {
+      clearInterval(healthCheckInterval);
+    }
     if (serverProcess) {
-      console.log("Stopping server...");
+      log("Stopping server...");
       serverProcess.kill();
     }
   });
