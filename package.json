@@ -1,6 +1,6 @@
 {
   "name": "tokenpass-desktop",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Decentralized Identity System Powered by Bitcoin",
   "main": "out/index.js",
   "homepage": "https://tokenpass.app",
@@ -40,23 +40,33 @@
       {
         "from": "./extraResources/",
         "to": "extraResources",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "./server/",
         "to": "server",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "mac": {
       "target": [
         {
           "target": "dmg",
-          "arch": ["arm64", "x64"]
+          "arch": [
+            "arm64",
+            "x64"
+          ]
         },
         {
           "target": "zip",
-          "arch": ["arm64", "x64"]
+          "arch": [
+            "arm64",
+            "x64"
+          ]
         }
       ],
       "category": "public.app-category.utilities",
@@ -74,7 +84,9 @@
       "sign": false
     },
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "icon.png"
     },
     "nsis": {
@@ -83,7 +95,9 @@
       "allowToChangeInstallationDirectory": true
     },
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "category": "Utility",
       "icon": "icon.png"
     }
