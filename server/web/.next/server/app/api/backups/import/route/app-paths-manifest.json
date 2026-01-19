@@ -1,0 +1,3 @@
+{
+  "/api/backups/import/route": "app/api/backups/import/route.js"
+}
