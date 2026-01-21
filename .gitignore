@@ -1,6 +1,9 @@
 node_modules
 dist
 out
+build/dev-*
+build/release-*
 .claude/
+.codex/
 .env*
 *.log

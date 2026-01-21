@@ -122,6 +122,12 @@
       "namedRegex": "^/api/identity(?:/)?$"
     },
     {
+      "page": "/api/identity/guest",
+      "regex": "^/api/identity/guest(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/identity/guest(?:/)?$"
+    },
+    {
       "page": "/api/login",
       "regex": "^/api/login(?:/)?$",
       "routeKeys": {},

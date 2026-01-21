@@ -1,123 +1,27 @@
 {
   "name": "tokenpass-desktop",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Decentralized Identity System Powered by Bitcoin",
-  "main": "out/index.js",
   "homepage": "https://tokenpass.app",
   "repository": {
     "type": "git",
     "url": "https://github.com/b-open-io/tokenpass-desktop"
   },
   "scripts": {
-    "compile": "tsc",
-    "start": "tsc && electron .",
-    "dev": "tsc --watch & electron .",
-    "prebuild": "tsc",
-    "build": "electron-builder -mwl",
-    "build:mac": "tsc && electron-builder --mac --arm64 --x64",
-    "build:mac:arm64": "tsc && electron-builder --mac --arm64",
-    "build:mac:x64": "tsc && electron-builder --mac --x64",
-    "build:win": "tsc && electron-builder --win --x64",
-    "build:linux": "tsc && electron-builder --linux --x64",
+    "dev": "electrobun dev",
+    "build": "electrobun build --release",
+    "build:dev": "electrobun build",
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/"
-  },
-  "build": {
-    "appId": "app.tokenpass",
-    "productName": "TokenPass",
-    "generateUpdatesFilesForAllChannels": true,
-    "files": [
-      "out/**/*",
-      "node_modules/**/*",
-      "package.json"
-    ],
-    "publish": {
-      "provider": "github",
-      "owner": "b-open-io",
-      "repo": "tokenpass-desktop"
-    },
-    "extraResources": [
-      {
-        "from": "./extraResources/",
-        "to": "extraResources",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "./server/",
-        "to": "server",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
-    "mac": {
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "arm64",
-            "x64"
-          ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "arm64",
-            "x64"
-          ]
-        }
-      ],
-      "category": "public.app-category.utilities",
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
-      "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist",
-      "notarize": false,
-      "extendInfo": {
-        "LSUIElement": true
-      }
-    },
-    "afterSign": "scripts/notarize.js",
-    "dmg": {
-      "sign": false
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ],
-      "icon": "icon.png"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": true
-    },
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "category": "Utility",
-      "icon": "icon.png"
-    }
   },
   "author": "B-Open-IO",
   "license": "MIT",
   "dependencies": {
-    "electron-store": "8",
-    "electron-updater": "^6.7.3",
-    "fast-deep-equal": "^3.1.3",
-    "fast-uri": "^3.1.0",
-    "json-schema-traverse": "^1.0.0",
-    "require-from-string": "^2.0.2"
+    "electrobun": "^0.8.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
-    "@electron/notarize": "^3.1.1",
-    "@types/node": "^25.0.9",
-    "electron": "^40.0.0",
-    "electron-builder": "^26.4.0",
+    "@types/bun": "^1.2.6",
     "typescript": "^5.9.3"
   }
 }

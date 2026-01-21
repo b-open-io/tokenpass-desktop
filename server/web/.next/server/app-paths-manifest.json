@@ -13,6 +13,7 @@
   "/api/encrypt/route": "app/api/encrypt/route.js",
   "/api/export/route": "app/api/export/route.js",
   "/api/friend-pubkey/route": "app/api/friend-pubkey/route.js",
+  "/api/identity/guest/route": "app/api/identity/guest/route.js",
   "/api/identity/route": "app/api/identity/route.js",
   "/api/login/route": "app/api/login/route.js",
   "/api/logout/route": "app/api/logout/route.js",

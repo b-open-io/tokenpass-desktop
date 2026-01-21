@@ -12,6 +12,7 @@
   "dependencies": {
     "@better-auth/oauth-provider": "^1.4.15",
     "@bsv/sdk": "^1.10.1",
+    "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
@@ -27,6 +28,7 @@
     "better-auth": "^1.4.15",
     "bitcoin-auth": "^0.0.7",
     "bitcoin-backup": "^0.0.5",
+    "bitcoin-image": "^0.0.3",
     "bsv-bap": "^0.1.14",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -38,6 +40,7 @@
     "postgres": "^3.4.8",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "sigma-avatars": "^0.0.3",
     "sigma-protocol": "^0.1.8",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.3.5"

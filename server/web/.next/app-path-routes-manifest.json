@@ -13,6 +13,7 @@
   "/api/encrypt/route": "/api/encrypt",
   "/api/export/route": "/api/export",
   "/api/friend-pubkey/route": "/api/friend-pubkey",
+  "/api/identity/guest/route": "/api/identity/guest",
   "/api/identity/route": "/api/identity",
   "/api/login/route": "/api/login",
   "/api/logout/route": "/api/logout",
