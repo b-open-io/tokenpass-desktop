@@ -40,17 +40,46 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      # macOS: Import certificate into keychain
+      - name: Import Apple certificate
+        if: matrix.platform == 'mac' && env.CSC_LINK != ''
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        run: |
+          # Create temporary keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+
+          # Decode certificate
+          echo "$CSC_LINK" | base64 --decode > $RUNNER_TEMP/certificate.p12
+
+          # Create and configure keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import certificate
+          security import $RUNNER_TEMP/certificate.p12 -P "$CSC_KEY_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Extract certificate name for Electrobun
+          CERT_NAME=$(security find-identity -v -p codesigning $KEYCHAIN_PATH | grep "Developer ID Application" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "ELECTROBUN_DEVELOPER_ID=$CERT_NAME" >> $GITHUB_ENV
+
+          # Clean up
+          rm $RUNNER_TEMP/certificate.p12
+
       # Build for macOS
       - name: Build (macOS)
         if: matrix.platform == 'mac'
         env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ELECTROBUN_TEAMID: ${{ secrets.APPLE_TEAM_ID }}
+          ELECTROBUN_APPLEID: ${{ secrets.APPLE_ID }}
+          ELECTROBUN_APPLEIDPASS: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           RELEASE_BUCKET_URL: https://github.com/b-open-io/tokenpass-desktop/releases/download/
-        run: bunx electrobun build --release
+        run: bunx electrobun build --env=stable
 
       # Build for Windows
       - name: Build (Windows)
@@ -59,22 +88,24 @@ jobs:
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
           RELEASE_BUCKET_URL: https://github.com/b-open-io/tokenpass-desktop/releases/download/
-        run: bunx electrobun build --release
+        run: bunx electrobun build --env=stable
 
       # Build for Linux
       - name: Build (Linux)
         if: matrix.platform == 'linux'
         env:
           RELEASE_BUCKET_URL: https://github.com/b-open-io/tokenpass-desktop/releases/download/
-        run: bunx electrobun build --release
+        run: bunx electrobun build --env=stable
 
       # List build output for debugging
       - name: List build output
         run: |
           echo "=== Build directory contents ==="
           ls -la build/ || echo "No build directory"
-          echo "=== Release directories ==="
-          ls -la build/release-* 2>/dev/null || echo "No release directories found"
+          echo "=== Artifacts directory ==="
+          ls -la artifacts/ 2>/dev/null || echo "No artifacts directory"
+          echo "=== All files ==="
+          find . -name "*.dmg" -o -name "*.zip" -o -name "*.exe" -o -name "*.AppImage" 2>/dev/null || true
         shell: bash
 
       # Upload artifacts
@@ -83,12 +114,13 @@ jobs:
         with:
           name: build-${{ matrix.platform }}
           path: |
-            build/release-*/*.dmg
-            build/release-*/*.zip
-            build/release-*/*.exe
-            build/release-*/*.AppImage
-            build/release-*/*.yml
-            build/release-*/*.json
+            artifacts/**/*.dmg
+            artifacts/**/*.zip
+            artifacts/**/*.exe
+            artifacts/**/*.AppImage
+            artifacts/**/*.json
+            artifacts/**/*.tar.zst
+            artifacts/**/*.patch
           if-no-files-found: warn
 
   release:
@@ -139,14 +171,14 @@ jobs:
           ## Installation
 
           ### macOS
-          - **Apple Silicon (M1/M2/M3/M4)**: Download \`TokenPass-${VERSION}-arm64.dmg\`
-          - **Intel**: Download \`TokenPass-${VERSION}.dmg\`
+          - **Apple Silicon (M1/M2/M3/M4)**: Download \`TokenPass-stable.dmg\` (arm64)
+          - **Intel**: Download \`TokenPass-stable.dmg\` (x64)
 
           ### Windows
-          - Download \`TokenPass-${VERSION}-win64.exe\`
+          - Download \`TokenPass-stable.exe\`
 
           ### Linux
-          - Download \`TokenPass-${VERSION}.AppImage\`
+          - Download \`TokenPass-stable.AppImage\`
           EOF
 
       - name: Create GitHub Release

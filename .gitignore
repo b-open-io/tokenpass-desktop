@@ -1,8 +1,8 @@
 node_modules
 dist
 out
-build/dev-*
-build/release-*
+build/
+artifacts/
 .claude/
 .codex/
 .env*
